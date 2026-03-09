@@ -1,95 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+margin:0;
+padding:0;
+box-sizing:border-box;
 }
 
-body {
-  background: transparent;
-  overflow: hidden;
+body{
+background:#ddd;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
 }
 
-.slider-outer {
-  position: relative;
-  width: 100%;
-  height: 750px;
-  overflow: hidden;
+/* main frame */
+
+.frame{
+position:relative;
+width:1920px;
+height:750px;
+display:flex;
+gap:15px;
+overflow:hidden;
 }
 
-/* EDGE BLUR + FADE EFFECT */
+/* slides */
 
-.slider-outer::before,
-.slider-outer::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 120px;
-  z-index: 2;
-  pointer-events: none;
-
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+.slide{
+width:300px;
+height:750px;
+background:white;
+flex-shrink:0;
 }
 
-.slider-outer::before {
-  left: 0;
-  background: linear-gradient(to right, rgba(255,255,255,0.9) 0%, transparent 100%);
+/* progressive blur overlays */
+
+.blur-left,
+.blur-right{
+position:absolute;
+top:0;
+height:100%;
+width:300px;
+pointer-events:none;
+backdrop-filter:blur(100px);
+-webkit-backdrop-filter:blur(100px);
 }
 
-.slider-outer::after {
-  right: 0;
-  background: linear-gradient(to left, rgba(255,255,255,0.9) 0%, transparent 100%);
+/* LEFT progressive blur */
+
+.blur-left{
+left:0;
+mask-image:linear-gradient(
+to right,
+black 0%,
+black 20%,
+rgba(0,0,0,0.8) 40%,
+rgba(0,0,0,0.4) 60%,
+transparent 100%
+);
 }
 
-/* SLIDER TRACK */
+/* RIGHT progressive blur */
 
-.slider-track {
-  display: flex;
-  gap: 15px;
-  width: max-content;
-  height: 100%;
-  animation: scroll-left 75s linear infinite;
-}
-
-.slider-track:hover {
-  animation-play-state: paused;
-}
-
-@keyframes scroll-left {
-  0% {
-    transform: translateX(0);
-  }
-
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-/* SLIDES */
-
-.slide {
-  flex-shrink: 0;
-  width: 300px;
-  height: 750px;
-  overflow: hidden;
-}
-
-.slide img {
-  width: 300px;
-  height: 750px;
-  object-fit: cover;
-  display: block;
-  user-select: none;
-  -webkit-user-drag: none;
+.blur-right{
+right:0;
+mask-image:linear-gradient(
+to left,
+black 0%,
+black 20%,
+rgba(0,0,0,0.8) 40%,
+rgba(0,0,0,0.4) 60%,
+transparent 100%
+);
 }
 
 </style>
@@ -97,53 +86,20 @@ body {
 
 <body>
 
-<div class="slider-outer">
-  <div class="slider-track" id="track"></div>
+<div class="frame">
+
+<div class="slide"></div>
+<div class="slide"></div>
+<div class="slide"></div>
+<div class="slide"></div>
+<div class="slide"></div>
+<div class="slide"></div>
+<div class="slide"></div>
+
+<div class="blur-left"></div>
+<div class="blur-right"></div>
+
 </div>
-
-<script>
-
-const fileIds = [
-
-"10s5DtWQ6xbRBR_AJYntkojkLI6L7DxRh",
-"16zjKYF3wb4lJpW6laUqYtDl6_jm6zo_J",
-"1C4NVsCtAEHJcyeLOi_aJ83913Zc7MW__",
-"1D7RK1Z4uGbQaXQwku1xuNtiz_jOFL2Or",
-"1DEqGNt8ZoNakDXqdnH4uAU6-SL4iK4xW",
-"1Dxm1RycbmXviAlmbyuzon8I0xLaxBQ4n",
-"1GLPux98BA9BnVTcUVFaBtf9l_rM-obIe",
-"1HWxmipHUDh1irKjr_GHCdZiC7qvPpZql",
-"1YHoR-TedVKFfT_7K8yc3Q7u-fZXkhUBA",
-"1YPEALEPlkv5h36tX9p6RcA6Hxm283-hH",
-"1aZie0eD0SOhR_cbCWaj9TwVaB9ABKrPF",
-"1cnhf57n8tAtbHS_WqmERp-fbizxeEHKZ",
-"1doV4kVX0ijQhDxH5lnMY9Ietbue2QP9U",
-"1h_h1787c_EpilIDiflUEkmThZTM1zGq2",
-"1jiF0Hod48BNE6bUrUfa_YxOG_TEqAs-J",
-"1m1-Q2Z6K6qF-_LJD9qkgBjSp8nu_yUtE",
-"1sUsKKnjv6Z8en35MLHRdIShclaiF-NL4"
-
-];
-
-const track = document.getElementById('track');
-
-[...fileIds, ...fileIds].forEach((id, i) => {
-
-  const slide = document.createElement('div');
-  slide.className = 'slide';
-
-  const img = document.createElement('img');
-
-  img.src = `https://drive.google.com/thumbnail?id=${id}&sz=w800`;
-  img.alt = `Image ${(i % fileIds.length) + 1}`;
-  img.loading = i < fileIds.length ? 'eager' : 'lazy';
-
-  slide.appendChild(img);
-  track.appendChild(slide);
-
-});
-
-</script>
 
 </body>
 </html>
