@@ -1,189 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: transparent; overflow: hidden; }
 
-<style>
+    .slider-outer {
+      position: relative;
+      width: 100%;
+      height: 750px;
+      overflow: hidden;
+    }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+    /* Progressive blur layers — left side */
+    .blur-left,
+    .blur-right {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 150px;
+      z-index: 2;
+      pointer-events: none;
+      display: flex;
+    }
 
-body {
-  background: transparent;
-  overflow: hidden;
-}
+    .blur-left  { left: 0; }
+    .blur-right { right: 0; }
 
-.slider-outer {
-  position: relative;
-  width: 100%;
-  height: 750px;
-  overflow: hidden;
-}
+    /* Each side is split into segments, each with increasing blur.
+       We use -webkit-mask to fade the blur in/out so it blends smoothly. */
+    .blur-left .b  { height: 100%; }
+    .blur-right .b { height: 100%; }
 
-/* PROGRESSIVE BLUR OVERLAYS */
+    /* Left: 5 strips going left→right, blur decreases */
+    .blur-left .b1 { width: 30px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      -webkit-mask: linear-gradient(to right, black 0%, black 60%, transparent 100%); mask: linear-gradient(to right, black 0%, black 60%, transparent 100%); }
+    .blur-left .b2 { width: 30px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      -webkit-mask: linear-gradient(to right, black 0%, black 40%, transparent 100%); mask: linear-gradient(to right, black 0%, black 40%, transparent 100%); }
+    .blur-left .b3 { width: 30px; backdrop-filter: blur(8px);  -webkit-backdrop-filter: blur(8px);
+      -webkit-mask: linear-gradient(to right, black 0%, black 20%, transparent 100%); mask: linear-gradient(to right, black 0%, black 20%, transparent 100%); }
+    .blur-left .b4 { width: 30px; backdrop-filter: blur(4px);  -webkit-backdrop-filter: blur(4px);
+      -webkit-mask: linear-gradient(to right, black 0%, transparent 100%); mask: linear-gradient(to right, black 0%, transparent 100%); }
+    .blur-left .b5 { width: 30px; backdrop-filter: blur(1.5px); -webkit-backdrop-filter: blur(1.5px);
+      -webkit-mask: linear-gradient(to right, black 0%, transparent 100%); mask: linear-gradient(to right, black 0%, transparent 100%); }
 
-.slider-outer::before,
-.slider-outer::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: 300px;
-  z-index: 3;
-  pointer-events: none;
+    /* Right: mirror of left */
+    .blur-right .b1 { width: 30px; backdrop-filter: blur(1.5px); -webkit-backdrop-filter: blur(1.5px);
+      -webkit-mask: linear-gradient(to left, black 0%, transparent 100%); mask: linear-gradient(to left, black 0%, transparent 100%); }
+    .blur-right .b2 { width: 30px; backdrop-filter: blur(4px);  -webkit-backdrop-filter: blur(4px);
+      -webkit-mask: linear-gradient(to left, black 0%, transparent 100%); mask: linear-gradient(to left, black 0%, transparent 100%); }
+    .blur-right .b3 { width: 30px; backdrop-filter: blur(8px);  -webkit-backdrop-filter: blur(8px);
+      -webkit-mask: linear-gradient(to left, black 0%, black 20%, transparent 100%); mask: linear-gradient(to left, black 0%, black 20%, transparent 100%); }
+    .blur-right .b4 { width: 30px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      -webkit-mask: linear-gradient(to left, black 0%, black 40%, transparent 100%); mask: linear-gradient(to left, black 0%, black 40%, transparent 100%); }
+    .blur-right .b5 { width: 30px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      -webkit-mask: linear-gradient(to left, black 0%, black 60%, transparent 100%); mask: linear-gradient(to left, black 0%, black 60%, transparent 100%); }
 
-  backdrop-filter: blur(100px);
-  -webkit-backdrop-filter: blur(100px);
-}
+    .slider-track {
+      display: flex;
+      gap: 15px;
+      width: max-content;
+      height: 100%;
+      animation: scroll-left 75s linear infinite;
+    }
 
-/* LEFT SIDE BLUR */
+    .slider-track:hover { animation-play-state: paused; }
 
-.slider-outer::before {
-  left: 0;
+    @keyframes scroll-left {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
 
-  mask-image: linear-gradient(
-    to right,
-    black 0%,
-    rgba(0,0,0,0.9) 20%,
-    rgba(0,0,0,0.6) 40%,
-    rgba(0,0,0,0.3) 70%,
-    transparent 100%
-  );
+    .slide {
+      flex-shrink: 0;
+      width: 300px;
+      height: 750px;
+      overflow: hidden;
+    }
 
-  -webkit-mask-image: linear-gradient(
-    to right,
-    black 0%,
-    rgba(0,0,0,0.9) 20%,
-    rgba(0,0,0,0.6) 40%,
-    rgba(0,0,0,0.3) 70%,
-    transparent 100%
-  );
-}
-
-/* RIGHT SIDE BLUR */
-
-.slider-outer::after {
-  right: 0;
-
-  mask-image: linear-gradient(
-    to left,
-    black 0%,
-    rgba(0,0,0,0.9) 20%,
-    rgba(0,0,0,0.6) 40%,
-    rgba(0,0,0,0.3) 70%,
-    transparent 100%
-  );
-
-  -webkit-mask-image: linear-gradient(
-    to left,
-    black 0%,
-    rgba(0,0,0,0.9) 20%,
-    rgba(0,0,0,0.6) 40%,
-    rgba(0,0,0,0.3) 70%,
-    transparent 100%
-  );
-}
-
-/* SLIDER TRACK */
-
-.slider-track {
-  display: flex;
-  gap: 15px;
-  width: max-content;
-  height: 100%;
-  animation: scroll-left 75s linear infinite;
-}
-
-.slider-track:hover {
-  animation-play-state: paused;
-}
-
-@keyframes scroll-left {
-
-  0% {
-    transform: translateX(0);
-  }
-
-  100% {
-    transform: translateX(-50%);
-  }
-
-}
-
-/* SLIDES */
-
-.slide {
-  flex-shrink: 0;
-  width: 300px;
-  height: 750px;
-  overflow: hidden;
-}
-
-.slide img {
-  width: 300px;
-  height: 750px;
-  object-fit: cover;
-  display: block;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-</style>
+    .slide img {
+      width: 300px;
+      height: 750px;
+      object-fit: cover;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+  </style>
 </head>
-
 <body>
+  <div class="slider-outer">
 
-<div class="slider-outer">
-  <div class="slider-track" id="track"></div>
-</div>
+    <!-- Progressive blur: left edge -->
+    <div class="blur-left">
+      <div class="b b1"></div>
+      <div class="b b2"></div>
+      <div class="b b3"></div>
+      <div class="b b4"></div>
+      <div class="b b5"></div>
+    </div>
 
-<script>
+    <!-- Progressive blur: right edge -->
+    <div class="blur-right">
+      <div class="b b1"></div>
+      <div class="b b2"></div>
+      <div class="b b3"></div>
+      <div class="b b4"></div>
+      <div class="b b5"></div>
+    </div>
 
-const fileIds = [
+    <div class="slider-track" id="track"></div>
+  </div>
 
-"10s5DtWQ6xbRBR_AJYntkojkLI6L7DxRh",
-"16zjKYF3wb4lJpW6laUqYtDl6_jm6zo_J",
-"1C4NVsCtAEHJcyeLOi_aJ83913Zc7MW__",
-"1D7RK1Z4uGbQaXQwku1xuNtiz_jOFL2Or",
-"1DEqGNt8ZoNakDXqdnH4uAU6-SL4iK4xW",
-"1Dxm1RycbmXviAlmbyuzon8I0xLaxBQ4n",
-"1GLPux98BA9BnVTcUVFaBtf9l_rM-obIe",
-"1HWxmipHUDh1irKjr_GHCdZiC7qvPpZql",
-"1YHoR-TedVKFfT_7K8yc3Q7u-fZXkhUBA",
-"1YPEALEPlkv5h36tX9p6RcA6Hxm283-hH",
-"1aZie0eD0SOhR_cbCWaj9TwVaB9ABKrPF",
-"1cnhf57n8tAtbHS_WqmERp-fbizxeEHKZ",
-"1doV4kVX0ijQhDxH5lnMY9Ietbue2QP9U",
-"1h_h1787c_EpilIDiflUEkmThZTM1zGq2",
-"1jiF0Hod48BNE6bUrUfa_YxOG_TEqAs-J",
-"1m1-Q2Z6K6qF-_LJD9qkgBjSp8nu_yUtE",
-"1sUsKKnjv6Z8en35MLHRdIShclaiF-NL4"
+  <script>
+    const fileIds = [
+      "10s5DtWQ6xbRBR_AJYntkojkLI6L7DxRh",
+      "16zjKYF3wb4lJpW6laUqYtDl6_jm6zo_J",
+      "1C4NVsCtAEHJcyeLOi_aJ83913Zc7MW__",
+      "1D7RK1Z4uGbQaXQwku1xuNtiz_jOFL2Or",
+      "1DEqGNt8ZoNakDXqdnH4uAU6-SL4iK4xW",
+      "1Dxm1RycbmXviAlmbyuzon8I0xLaxBQ4n",
+      "1GLPux98BA9BnVTcUVFaBtf9l_rM-obIe",
+      "1HWxmipHUDh1irKjr_GHCdZiC7qvPpZql",
+      "1YHoR-TedVKFfT_7K8yc3Q7u-fZXkhUBA",
+      "1YPEALEPlkv5h36tX9p6RcA6Hxm283-hH",
+      "1aZie0eD0SOhR_cbCWaj9TwVaB9ABKrPF",
+      "1cnhf57n8tAtbHS_WqmERp-fbizxeEHKZ",
+      "1doV4kVX0ijQhDxH5lnMY9Ietbue2QP9U",
+      "1h_h1787c_EpilIDiflUEkmThZTM1zGq2",
+      "1jiF0Hod48BNE6bUrUfa_YxOG_TEqAs-J",
+      "1m1-Q2Z6K6qF-_LJD9qkgBjSp8nu_yUtE",
+      "1sUsKKnjv6Z8en35MLHRdIShclaiF-NL4",
+    ];
 
-];
-
-const track = document.getElementById('track');
-
-[...fileIds, ...fileIds].forEach((id, i) => {
-
-  const slide = document.createElement('div');
-  slide.className = 'slide';
-
-  const img = document.createElement('img');
-
-  img.src = `https://drive.google.com/thumbnail?id=${id}&sz=w800`;
-  img.alt = `Image ${(i % fileIds.length) + 1}`;
-  img.loading = i < fileIds.length ? 'eager' : 'lazy';
-
-  slide.appendChild(img);
-  track.appendChild(slide);
-
-});
-
-</script>
-
+    const track = document.getElementById('track');
+    [...fileIds, ...fileIds].forEach((id, i) => {
+      const slide = document.createElement('div');
+      slide.className = 'slide';
+      const img = document.createElement('img');
+      img.src = `https://drive.google.com/thumbnail?id=${id}&sz=w800`;
+      img.alt = `Image ${(i % fileIds.length) + 1}`;
+      img.loading = i < fileIds.length ? 'eager' : 'lazy';
+      slide.appendChild(img);
+      track.appendChild(slide);
+    });
+  </script>
 </body>
 </html>
