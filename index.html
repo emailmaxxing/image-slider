@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .slider-shell {
+    width: 100%;
+    max-width: 960px;
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 16px;
+    padding: 14px 14px 12px;
+    box-shadow:
+      inset 0 2px 12px rgba(0,0,0,0.22),
+      inset 0 -1px 4px rgba(255,255,255,0.03),
+      0 4px 20px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .slider-viewport {
+    overflow: hidden;
+    border-radius: 8px;
+    width: 100%;
+  }
+
+  .slider-track {
+    display: flex;
+    gap: 8px;
+    transition: transform 0.55s cubic-bezier(0.65, 0, 0.35, 1);
+    will-change: transform;
+  }
+
+  .slide {
+    flex: 0 0 calc((100% - 5 * 8px) / 6);
+    aspect-ratio: 2/3;
+    border-radius: 6px;
+    overflow: hidden;
+    background: rgba(0,0,0,0.2);
+  }
+
+  .slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding-top: 10px;
+  }
+
+  .btn {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #fff;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.15s;
+    flex-shrink: 0;
+  }
+  .btn:hover { background: rgba(255,255,255,0.25); transform: scale(1.08); }
+  .btn:active { transform: scale(0.94); }
+  .btn svg { width: 16px; height: 16px; }
+
+  .dots {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    transition: background 0.25s, transform 0.25s;
+  }
+  .dot.active {
+    background: rgba(255,255,255,0.85);
+    transform: scale(1.4);
+  }
+  .dot:hover { background: rgba(255,255,255,0.5); }
+</style>
+</head>
+<body>
+
+<div class="slider-shell">
+  <div class="slider-viewport">
+    <div class="slider-track" id="track"></div>
+  </div>
+  <div class="controls">
+    <button class="btn" id="prev" aria-label="Previous">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next" aria-label="Next">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  const fileIds = [
+    "10s5DtWQ6xbRBR_AJYntkojkLI6L7DxRh",
+    "16zjKYF3wb4lJpW6laUqYtDl6_jm6zo_J",
+    "1C4NVsCtAEHJcyeLOi_aJ83913Zc7MW__",
+    "1D7RK1Z4uGbQaXQwku1xuNtiz_jOFL2Or",
+    "1DEqGNt8ZoNakDXqdnH4uAU6-SL4iK4xW",
+    "1Dxm1RycbmXviAlmbyuzon8I0xLaxBQ4n",
+    "1GLPux98BA9BnVTcUVFaBtf9l_rM-obIe",
+    "1HWxmipHUDh1irKjr_GHCdZiC7qvPpZql",
+    "1YHoR-TedVKFfT_7K8yc3Q7u-fZXkhUBA",
+    "1YPEALEPlkv5h36tX9p6RcA6Hxm283-hH",
+    "1aZie0eD0SOhR_cbCWaj9TwVaB9ABKrPF",
+    "1cnhf57n8tAtbHS_WqmERp-fbizxeEHKZ",
+    "1doV4kVX0ijQhDxH5lnMY9Ietbue2QP9U",
+    "1h_h1787c_EpilIDiflUEkmThZTM1zGq2",
+    "1jiF0Hod48BNE6bUrUfa_YxOG_TEqAs-J",
+    "1m1-Q2Z6K6qF-_LJD9qkgBjSp8nu_yUtE",
+    "1sUsKKnjv6Z8en35MLHRdIShclaiF-NL4",
+  ];
+
+  const VISIBLE = 6;
+  const GAP_PX  = 8;
+
+  const track   = document.getElementById('track');
+  const dotsEl  = document.getElementById('dots');
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
+
+  const total = fileIds.length;
+  const pages = Math.ceil(total / VISIBLE);
+  let   page  = 0;
+
+  fileIds.forEach((id, i) => {
+    const slide = document.createElement('div');
+    slide.className = 'slide';
+    const img = document.createElement('img');
+    img.src     = `https://drive.google.com/thumbnail?id=${id}&sz=w800`;
+    img.alt     = `Image ${i + 1}`;
+    img.loading = i < VISIBLE ? 'eager' : 'lazy';
+    slide.appendChild(img);
+    track.appendChild(slide);
+  });
+
+  for (let p = 0; p < pages; p++) {
+    const dot = document.createElement('button');
+    dot.className = 'dot' + (p === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', `Page ${p + 1}`);
+    dot.addEventListener('click', () => goTo(p));
+    dotsEl.appendChild(dot);
+  }
+
+  function slideWidth() {
+    return track.querySelector('.slide').getBoundingClientRect().width;
+  }
+
+  function goTo(p) {
+    const dots = dotsEl.querySelectorAll('.dot');
+    dots[page].classList.remove('active');
+    page = (p + pages) % pages;
+    dots[page].classList.add('active');
+    const offset = page * VISIBLE * (slideWidth() + GAP_PX);
+    track.style.transform = `translateX(-${offset}px)`;
+  }
+
+  prevBtn.addEventListener('click', () => goTo(page - 1));
+  nextBtn.addEventListener('click', () => goTo(page + 1));
+  window.addEventListener('resize', () => goTo(page));
+
+  let tx = 0;
+  track.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend',   e => {
+    const diff = tx - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) goTo(diff > 0 ? page + 1 : page - 1);
+  }, { passive: true });
+</script>
+</body>
+</html>
