@@ -14,10 +14,10 @@
   .slider-outer {
     position: relative;
     width: 100%;
+    height: 750px;
     overflow: hidden;
   }
 
-  /* Fade blur masks on left and right */
   .slider-outer::before,
   .slider-outer::after {
     content: '';
@@ -39,9 +39,10 @@
 
   .slider-track {
     display: flex;
-    gap: 10px;
+    gap: 15px;
     width: max-content;
-    animation: scroll-left 60s linear infinite;
+    height: 100%;
+    animation: scroll-left 75s linear infinite;
   }
 
   .slider-track:hover {
@@ -55,14 +56,14 @@
 
   .slide {
     flex-shrink: 0;
-    width: 140px;
-    aspect-ratio: 2/3;
+    width: 300px;
+    height: 750px;
     overflow: hidden;
   }
 
   .slide img {
-    width: 100%;
-    height: 100%;
+    width: 300px;
+    height: 750px;
     object-fit: cover;
     display: block;
     user-select: none;
@@ -99,25 +100,16 @@
 
   const track = document.getElementById('track');
 
-  // Build slides twice for seamless loop
-  function buildSlides() {
-    [...fileIds, ...fileIds].forEach((id, i) => {
-      const slide = document.createElement('div');
-      slide.className = 'slide';
-      const img = document.createElement('img');
-      img.src     = `https://drive.google.com/thumbnail?id=${id}&sz=w400`;
-      img.alt     = `Image ${(i % fileIds.length) + 1}`;
-      img.loading = i < fileIds.length ? 'eager' : 'lazy';
-      slide.appendChild(img);
-      track.appendChild(slide);
-    });
-  }
-
-  buildSlides();
-
-  // Match fade color to the page background automatically
-  // Override --bg if your Carrd background is not white
-  // e.g. document.documentElement.style.setProperty('--bg', '#0a0a0a');
+  [...fileIds, ...fileIds].forEach((id, i) => {
+    const slide = document.createElement('div');
+    slide.className = 'slide';
+    const img = document.createElement('img');
+    img.src     = `https://drive.google.com/thumbnail?id=${id}&sz=w800`;
+    img.alt     = `Image ${(i % fileIds.length) + 1}`;
+    img.loading = i < fileIds.length ? 'eager' : 'lazy';
+    slide.appendChild(img);
+    track.appendChild(slide);
+  });
 </script>
 </body>
 </html>
